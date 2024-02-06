@@ -1,6 +1,8 @@
 <x-guest-layout>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-input-error :messages="$errors->get('generic')" class="mt-2" />
+
 
     <form method="POST" action="{{ route('login') }}">
         @csrf

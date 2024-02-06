@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,17 +15,8 @@ use Illuminate\View\View;
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Display the login view.
-     */
-    public function create(): View
-    {
-        return view('auth.login');
-    }
-
-    /**
      * Handle an incoming authentication request.
      * @param LoginRequest $request
-     * @return User
      */
     public function store(LoginRequest $request)
     {
@@ -37,24 +29,57 @@ class AuthenticatedSessionController extends Controller
         $response = Http::withHeaders([
             'Accept' => 'application/json'
         ])
-            ->post('http://127.0.0.1:8000/v1/login', [
+            ->post('http://127.0.0.1:8001/v1/login', [
                 'email' => $request->email,
                 'password' => $request->password
             ]);
 
-        $response = $response->json();
+        if ($response->status() == 404) {
+            return back()->withErrors(['generic' => 'Las credenciales no coinciden con nuestros datos']);
+        }
 
-        return User::updateOrCreate(
+        $service = $response->json();
+
+        $user = User::updateOrCreate(
             ['email' => $request->email],
-            $response['data']
+            $service['data']
         );
 
+        if(!$user->accessToken->count()) {
+            $response = Http::withHeaders([
+                'Accept' => 'application/json'
+            ])
+                ->post('http://127.0.0.1:8001/oauth/token', [
+                    'grant_type' => 'password',
+                    'client_id' => '99cb1a2a-1696-40d7-be26-1f7826f78960',
+                    'client_secret' => 'Ptpe5aVljf5lOowTlbSNHCVyqVFmrhyNmrzHrZg0',
+                    'username' => $request->email,
+                    'password' => $request->password
+                ]);
 
-//        $request->authenticate();
-//
-//        $request->session()->regenerate();
-//
-//        return redirect()->intended(RouteServiceProvider::HOME);
+            $access_token = $response->json();
+
+            $user->accessToken()->create([
+                    'service_id' => $service['data']['id'],
+                    'access_token' => $access_token['access_token'],
+                    'refresh_token' => $access_token['refresh_token'],
+                    'expires_at' => now()->addSecond($access_token['expires_in'])]
+            );
+        }
+
+        Auth::login($user, $request->remember);
+
+        return redirect()->intended(RouteServiceProvider::HOME);
+
+
+    }
+
+    /**
+     * Display the login view.
+     */
+    public function create(): View
+    {
+        return view('auth.login');
     }
 
     /**
