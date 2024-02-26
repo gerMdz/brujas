@@ -45,7 +45,7 @@ class AuthenticatedSessionController extends Controller
             $service['data']
         );
 
-        if(!$user->accessToken->count()) {
+        if(!$user->accessToken) {
             $response = Http::withHeaders([
                 'Accept' => 'application/json'
             ])
