@@ -30,5 +30,11 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+    'apiconsume' => [
+        'client_id' => env('CLIENT_ID'),
+        'cliente_secret'=> env('CLIENT_SECRET'),
+        'cliente_oauth'=> env('CLIENT_OAUTH'),
+    ]
+
 
 ];
