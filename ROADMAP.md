@@ -7,4 +7,4 @@ Este el capítulo del cliente
 
 Este usa el puerto 8180
 
-[Cap 37](https://codersfree.com/courses-status/aprende-a-crear-una-api-restful-con-laravel/volver-formulario-responsivo)
+[Mostrar el estado de los clientes](https://codersfree.com/courses-status/aprende-a-crear-una-api-restful-con-laravel/mostrar-listado-de-clientes)
